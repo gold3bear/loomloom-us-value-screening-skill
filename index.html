@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#030817">
+  <title>好股票百里挑一｜LoomLoom 美股价值初筛</title>
+  <style>
+    :root {
+      --ink: #030817;
+      --ink-2: #071327;
+      --surface: rgba(10, 28, 55, .72);
+      --line: rgba(128, 196, 255, .2);
+      --muted: #9eafc8;
+      --white: #f4f7fb;
+      --blue: #1596f3;
+      --cyan: #62e2ff;
+      --gold: #f5c965;
+      --danger: #ff8585;
+      --radius: 22px;
+      --page: min(1180px, calc(100% - 48px));
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: "HarmonyOS Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--ink); }
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--white);
+      background:
+        radial-gradient(900px 520px at 17% 10%, rgba(19, 140, 244, .17), transparent 64%),
+        radial-gradient(760px 540px at 83% 32%, rgba(98, 226, 255, .10), transparent 66%),
+        linear-gradient(180deg, #030817 0%, #061226 54%, #030817 100%);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      z-index: -1;
+      inset: 0;
+      opacity: .22;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(120, 193, 255, .08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(120, 193, 255, .08) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: linear-gradient(to bottom, black, transparent 75%);
+    }
+
+    a { color: inherit; }
+    button { font: inherit; }
+    .shell { width: var(--page); margin: 0 auto; }
+
+    .nav {
+      width: 100%;
+      padding: 18px 0;
+      position: relative;
+      z-index: 5;
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 12px 14px 12px 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(3, 8, 23, .58);
+      backdrop-filter: blur(16px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -.03em;
+      font-size: 18px;
+      font-weight: 760;
+      text-decoration: none;
+    }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 27px;
+      height: 27px;
+      border: 1px solid rgba(98, 226, 255, .58);
+      border-radius: 9px;
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 13px;
+      box-shadow: inset 0 0 14px rgba(98, 226, 255, .14);
+    }
+    .nav-links { display: flex; align-items: center; gap: 6px; }
+    .nav-links button {
+      border: 0;
+      color: var(--muted);
+      background: transparent;
+      padding: 8px 10px;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+    .nav-links button:hover, .nav-links button:focus-visible { background: rgba(98, 226, 255, .1); color: var(--white); outline: none; }
+    .nav-cta {
+      border: 1px solid rgba(98, 226, 255, .54);
+      padding: 8px 14px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, rgba(21, 150, 243, .32), rgba(98, 226, 255, .13));
+      color: var(--white);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(21, 150, 243, .17); }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.02fr .98fr;
+      align-items: center;
+      gap: clamp(34px, 6vw, 88px);
+      min-height: 640px;
+      padding: 48px 0 56px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 24px; height: 1px; background: currentColor; }
+    h1, h2, p { margin-top: 0; }
+    h1 {
+      max-width: 720px;
+      margin: 20px 0 22px;
+      font-size: clamp(48px, 4.65vw, 72px);
+      line-height: .99;
+      letter-spacing: -.078em;
+      text-wrap: pretty;
+    }
+    h1 strong {
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: .96em;
+      letter-spacing: -.1em;
+      text-shadow: 0 0 28px rgba(98, 226, 255, .28);
+    }
+    .hero-lead { max-width: 600px; color: #c1cee0; font-size: 18px; text-wrap: pretty; }
+    .hero-lead b { color: var(--white); font-weight: 720; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 31px; }
+    .button-primary, .button-secondary {
+      min-height: 48px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 740;
+      text-decoration: none;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .button-primary {
+      border: 1px solid rgba(98, 226, 255, .78);
+      background: linear-gradient(135deg, #128de8, #0f5db9);
+      color: white;
+      box-shadow: 0 16px 38px rgba(13, 113, 205, .28);
+    }
+    .hero .button-primary { display: inline-flex; align-items: center; min-height: 54px; padding: 14px 24px; font-size: 16px; box-shadow: 0 18px 42px rgba(13, 113, 205, .38), 0 0 0 4px rgba(98, 226, 255, .08); }
+    .button-secondary { border: 1px solid var(--line); background: rgba(255, 255, 255, .03); color: var(--white); }
+    .button-primary:hover, .button-secondary:hover { transform: translateY(-2px); }
+    .button-secondary:hover { border-color: rgba(98, 226, 255, .5); background: rgba(98, 226, 255, .08); }
+    .hero-note { margin: 16px 0 0; color: #70829c; font-size: 13px; }
+
+    .hero-visual { position: relative; min-height: 520px; overflow: hidden; }
+    .orbit { position: absolute; border: 1px solid rgba(98, 226, 255, .16); border-radius: 50%; inset: 13% 6% 10%; transform: rotate(-23deg); }
+    .orbit::after { content: ""; position: absolute; inset: 17%; border: 1px solid rgba(245, 201, 101, .15); border-radius: 50%; }
+    .poster-frame {
+      position: absolute;
+      inset: 0 7% 0 7%;
+      overflow: hidden;
+      border: 1px solid rgba(152, 214, 255, .34);
+      border-radius: 26px;
+      background: #040d1d;
+      box-shadow: 0 34px 80px rgba(0, 0, 0, .45), 0 0 90px rgba(21, 150, 243, .16);
+      transform: perspective(1200px) rotateY(-7deg) rotateX(2deg);
+    }
+    .poster-frame::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, rgba(98, 226, 255, .18), transparent 31%, transparent 66%, rgba(245, 201, 101, .12)); mix-blend-mode: screen; pointer-events: none; }
+    .poster-frame img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center top; opacity: .9; }
+    .visual-tag {
+      position: absolute;
+      z-index: 2;
+      right: -1%;
+      bottom: 7%;
+      display: grid;
+      gap: 3px;
+      min-width: 156px;
+      padding: 12px 14px;
+      border: 1px solid rgba(245, 201, 101, .55);
+      border-radius: 14px;
+      background: rgba(12, 19, 32, .86);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, .3);
+      backdrop-filter: blur(14px);
+    }
+    .visual-tag span { color: var(--gold); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; }
+    .visual-tag b { font-size: 15px; }
+
+    .proof-strip {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 1fr 1fr;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .proof-cell { min-height: 136px; padding: 28px 28px 25px; border-left: 1px solid var(--line); }
+    .proof-cell:first-child { border-left: 0; }
+    .proof-kicker { display: block; margin-bottom: 8px; color: var(--cyan); font-family: var(--mono); font-size: 11px; letter-spacing: .1em; }
+    .proof-cell strong { display: block; font-size: 18px; line-height: 1.3; }
+    .proof-cell p { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+
+    .section { padding: 128px 0; }
+    .section-heading { display: grid; grid-template-columns: .75fr 1.25fr; gap: 40px; align-items: end; margin-bottom: 46px; }
+    .section-heading h2 { margin: 0; font-size: clamp(34px, 4vw, 58px); line-height: 1.04; letter-spacing: -.06em; text-wrap: pretty; }
+    .section-heading p { max-width: 520px; margin: 0; color: var(--muted); font-size: 17px; }
+    .flow {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .flow::before { content: ""; position: absolute; left: 11%; right: 11%; top: 46px; height: 1px; background: linear-gradient(90deg, rgba(98, 226, 255, .2), var(--cyan), rgba(245, 201, 101, .45)); }
+    .flow-step { position: relative; padding: 0 10px; }
+    .flow-index { position: relative; z-index: 1; display: grid; place-items: center; width: 92px; height: 92px; margin-bottom: 25px; border: 1px solid rgba(98, 226, 255, .5); border-radius: 50%; background: var(--ink); color: var(--cyan); font-family: var(--mono); font-size: 22px; box-shadow: 0 0 0 10px rgba(3, 8, 23, .94); }
+    .flow-step:last-child .flow-index { border-color: rgba(245, 201, 101, .7); color: var(--gold); }
+    .flow-step h3 { margin: 0 0 8px; font-size: 20px; }
+    .flow-step p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .method-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 22px; }
+    .method-panel { padding: 38px; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(145deg, rgba(14, 38, 70, .72), rgba(4, 12, 28, .66)); }
+    .method-panel h3 { margin: 8px 0 18px; font-size: 27px; line-height: 1.2; letter-spacing: -.04em; }
+    .method-panel p { max-width: 560px; margin: 0; color: #bfcee1; }
+    .lens-list { display: grid; gap: 0; margin-top: 32px; border-top: 1px solid var(--line); }
+    .lens { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 17px 0; border-bottom: 1px solid var(--line); }
+    .lens b { font-family: var(--mono); color: var(--cyan); font-size: 12px; }
+    .lens span { color: var(--muted); font-size: 14px; }
+    .audit-rail { display: grid; align-content: start; gap: 14px; }
+    .rail-item { padding: 22px; border: 1px solid rgba(98, 226, 255, .2); border-radius: 16px; background: rgba(5, 18, 38, .52); }
+    .rail-item b { display: block; margin-bottom: 7px; font-size: 17px; }
+    .rail-item p { margin: 0; color: var(--muted); font-size: 14px; }
+    .rail-item.gold { border-color: rgba(245, 201, 101, .34); background: linear-gradient(125deg, rgba(245, 201, 101, .13), rgba(4, 12, 28, .58)); }
+
+    .action-band { padding: 0 0 110px; }
+    .action-inner { position: relative; overflow: hidden; padding: clamp(34px, 6vw, 72px); border: 1px solid rgba(98, 226, 255, .4); border-radius: 28px; background: linear-gradient(115deg, rgba(7, 54, 100, .82), rgba(5, 15, 32, .95) 52%, rgba(73, 54, 14, .6)); }
+    .action-inner::before { content: ""; position: absolute; width: 320px; height: 320px; border: 1px solid rgba(98, 226, 255, .2); border-radius: 50%; right: -90px; top: -160px; }
+    .action-inner h2 { position: relative; max-width: 700px; margin: 0 0 15px; font-size: clamp(34px, 5vw, 64px); line-height: 1.04; letter-spacing: -.06em; }
+    .action-inner p { position: relative; max-width: 580px; margin: 0 0 28px; color: #bfd8ef; font-size: 17px; }
+    .prompt-box { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 15px; max-width: 820px; padding: 13px 15px 13px 18px; border: 1px solid rgba(255,255,255,.18); border-radius: 14px; background: rgba(3, 8, 23, .62); }
+    .prompt-box code { color: #d7e9fa; font-family: var(--mono); font-size: 13px; line-height: 1.55; }
+    .copy-button { flex: 0 0 auto; border: 1px solid rgba(98, 226, 255, .45); border-radius: 9px; padding: 9px 12px; background: rgba(98, 226, 255, .09); color: var(--white); cursor: pointer; }
+    .copy-button:hover { background: rgba(98, 226, 255, .18); }
+    .footer { display: flex; justify-content: space-between; gap: 20px; padding: 28px 0 42px; border-top: 1px solid var(--line); color: #71829d; font-size: 13px; }
+    .footer span:last-child { text-align: right; }
+
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.is-visible { opacity: 1; transform: none; }
+
+    @media (max-width: 860px) {
+      :root { --page: min(100% - 32px, 680px); }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; min-height: auto; padding-top: 48px; }
+      .hero-visual { min-height: 320px; }
+      .poster-frame { inset: 0 10% 0 4%; transform: perspective(1000px) rotateY(-4deg); }
+      .proof-strip { grid-template-columns: 1fr 1fr; }
+      .proof-cell:nth-child(3) { border-left: 0; border-top: 1px solid var(--line); }
+      .proof-cell:nth-child(4) { border-top: 1px solid var(--line); }
+      .section { padding: 88px 0; }
+      .section-heading, .method-grid { grid-template-columns: 1fr; gap: 18px; }
+      .flow { grid-template-columns: 1fr 1fr; row-gap: 36px; }
+      .flow::before { display: none; }
+      .flow-index { width: 68px; height: 68px; margin-bottom: 16px; box-shadow: 0 0 0 7px rgba(3, 8, 23, .94); }
+      .method-panel { padding: 28px; }
+    }
+    @media (max-width: 520px) {
+      .nav { padding-top: 12px; }
+      .nav-inner { padding-left: 13px; }
+      .nav-cta { padding: 7px 9px; font-size: 12px; }
+      h1 { font-size: clamp(43px, 14vw, 62px); }
+      .hero-lead { font-size: 16px; }
+      .hero { gap: 28px; padding-top: 38px; }
+      .hero-visual { min-height: 268px; }
+      .hero-actions { margin-top: 24px; }
+      .hero .button-primary { width: 100%; justify-content: center; text-align: center; }
+      .visual-tag { right: 0; bottom: 5%; min-width: 142px; }
+      .proof-strip, .flow { grid-template-columns: 1fr; }
+      .proof-cell, .proof-cell:nth-child(3), .proof-cell:nth-child(4) { border-left: 0; border-top: 1px solid var(--line); }
+      .proof-cell:first-child { border-top: 0; }
+      .prompt-box { align-items: flex-start; flex-direction: column; }
+      .footer { display: block; }
+      .footer span:last-child { display: block; margin-top: 6px; text-align: left; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav shell">
+    <div class="nav-inner">
+      <a href="#top" class="brand" aria-label="LoomLoom 美股价值初筛">
+        <span class="brand-mark">LL</span><span>LOOMLOOM <i style="color:var(--cyan);font-style:normal">×</i> 本地 AGENT</span>
+      </a>
+      <nav class="nav-links" aria-label="页面导航">
+        <button type="button" data-scroll="workflow">工作流</button>
+        <button type="button" data-scroll="method">研究框架</button>
+        <button type="button" data-scroll="start">开始使用</button>
+      </nav>
+      <a class="nav-cta" href="loomloom-us-value-screening-skill-v2.zip" download>下载 Skill</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy">
+        <span class="eyebrow">价值投资研究工作流</span>
+        <h1>好股票，<strong>百里挑一</strong><br>批量选股，瞬间完成</h1>
+        <p class="hero-lead">100只股票数据由 <b>LoomLoom 云端并行审查</b> 处理候选池，再由本地证据、否决项与复跑条件完成最后把关。</p>
+        <div class="hero-actions">
+          <a class="button-primary" href="loomloom-us-value-screening-skill-v2.zip" download>下载Skill</a>
+          <button class="button-secondary" type="button" data-scroll="workflow">查看工作流</button>
+        </div>
+        <p class="hero-note">“瞬间完成”指批量工作流体验；数据准备、本地校验与每次云端报价确认仍按真实流程执行。</p>
+      </div>
+      <div class="hero-visual" aria-label="100 只股票经云端审查与本地验证后形成研究候选的示意图">
+        <div class="orbit"></div>
+        <div class="poster-frame"><img src="loomloom-us-value-screening-poster-v1.png" alt="LoomLoom 美股价值初筛海报"></div>
+        <div class="visual-tag"><span>RESEARCH PRIORITY</span><b>不是买入指令</b></div>
+      </div>
+    </section>
+
+    <section class="proof-strip shell reveal" aria-label="核心价值">
+      <div class="proof-cell"><span class="proof-kicker">01 / 100 → 1</span><strong>好股票，百里挑一</strong><p>从股票代码或标准指标表开始，把候选池变成研究队列。</p></div>
+      <div class="proof-cell"><span class="proof-kicker">02 / CLOUD</span><strong>云端四维并行审查</strong><p>商业、护城河、财务与估值同时展开，避免单线判断。</p></div>
+      <div class="proof-cell"><span class="proof-kicker">03 / LOCAL</span><strong>本地证据硬校验</strong><p>拒绝无来源数字、错误引用与输入外推断。</p></div>
+      <div class="proof-cell"><span class="proof-kicker">04 / OUTPUT</span><strong>结论必须可以被推翻</strong><p>报告保留价格时点、风险、未知项与复跑条件。</p></div>
+    </section>
+
+    <section id="workflow" class="section shell">
+      <div class="section-heading reveal"><h2>一条从数据到<br>证据的研究链路</h2><p>模型负责并行阅读；本地程序负责不让未经验证的内容进入排序。每一步都为下一次复跑保留边界。</p></div>
+      <div class="flow reveal">
+        <article class="flow-step"><div class="flow-index">01</div><h3>输入股票列表</h3><p>输入代码、CSV、Excel 或已有的标准财务指标表。</p></article>
+        <article class="flow-step"><div class="flow-index">02</div><h3>准备与预检</h3><p>统一财报期间、价格时间、来源链接与未知项；不完整数据先阻断。</p></article>
+        <article class="flow-step"><div class="flow-index">03</div><h3>云端并行审查</h3><p>通过公开 LoomLoom SkillBot 做结构化批量研究；运行前先报价、再确认。</p></article>
+        <article class="flow-step"><div class="flow-index">04</div><h3>本地审计与排序</h3><p>验证证据路径、否决项与可证伪条件，仅保留可进入人工深研的候选。</p></article>
+      </div>
+    </section>
+
+    <section id="method" class="section shell">
+      <div class="section-heading reveal"><p class="eyebrow">价值投资方法论框架</p><h2>先看生意与人，<br>再看价格是否合理</h2></div>
+      <div class="method-grid reveal">
+        <article class="method-panel">
+          <span class="eyebrow">RESEARCH LENSES</span>
+          <h3>不是让模型替你“推荐股票”，而是用统一证据口径缩小研究范围。</h3>
+          <p>方法论强调理解商业模式、长期现金流、护城河、管理层与资本配置；价格判断必须同时绑定价格时点和财报期间。</p>
+          <div class="lens-list">
+            <div class="lens"><b>01</b><strong>可理解性与商业模式</strong><span>先回答公司如何赚钱</span></div>
+            <div class="lens"><b>02</b><strong>护城河与资本配置</strong><span>事实而非故事</span></div>
+            <div class="lens"><b>03</b><strong>财务质量与生存风险</strong><span>现金流、杠杆、稀释与红旗</span></div>
+            <div class="lens"><b>04</b><strong>估值与机会成本</strong><span>不输出目标价，只保留可推翻依据</span></div>
+          </div>
+        </article>
+        <aside class="audit-rail">
+          <div class="rail-item"><b>原子证据追溯</b><p>每项关键结论必须能对应到输入数据中的完整字段路径、原值、期间和单位。</p></div>
+          <div class="rail-item"><b>输入外数字拦截</b><p>目标价、未来股价、预测增长率等未经输入授权的数字触发本地拒绝。</p></div>
+          <div class="rail-item gold"><b>可证伪，而非确定性</b><p>价格变化、财报更新或经营事实改变后，报告明确指出需要重跑或结论失效。</p></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="start" class="action-band shell reveal">
+      <div class="action-inner">
+        <h2>百里挑一，<br>但每条结论都可复查。</h2>
+        <p>下载 Skill 到你的 Agent，配置自己的 LoomLoom 凭据。后续只需提供股票代码或数据表；云端执行前，Agent 会向你展示本次报价并等待确认。</p>
+        <div class="hero-actions">
+          <a class="button-primary" href="loomloom-us-value-screening-skill-v2.zip" download>下载美股价值初筛 Skill</a>
+          <button class="button-secondary" type="button" data-copy>复制调用 Prompt</button>
+        </div>
+        <div class="prompt-box" aria-label="Agent 调用 Prompt">
+          <code id="prompt-text">使用美股长期价值批量初筛 Skill，分析我提供的美股代码。先准备和校验数据，实时报价后等我确认，再调用 LoomLoom 并生成可审计报告。</code>
+          <button class="copy-button" type="button" data-copy>复制</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer shell"><span>LOOMLOOM × 本地 AGENT · 美股长期价值批量初筛</span><span>研究辅助，不构成投资建议；不提供目标价、仓位或买卖指令。</span></footer>
+
+  <script>
+    const motionReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('[data-scroll]').forEach((control) => {
+      control.addEventListener('click', () => {
+        const destination = document.getElementById(control.dataset.scroll);
+        if (destination) window.scrollTo({ top: destination.offsetTop - 18, behavior: motionReduced ? 'auto' : 'smooth' });
+      });
+    });
+    const copyPrompt = async () => {
+      const text = document.getElementById('prompt-text').textContent.trim();
+      const controls = document.querySelectorAll('[data-copy]');
+      try {
+        await navigator.clipboard.writeText(text);
+        controls.forEach((item) => { item.textContent = '已复制'; });
+      } catch (error) {
+        controls.forEach((item) => { item.textContent = '请手动复制'; });
+      }
+      window.setTimeout(() => controls.forEach((item) => { item.textContent = item.classList.contains('button-secondary') ? '复制调用 Prompt' : '复制'; }), 1800);
+    };
+    document.querySelectorAll('[data-copy]').forEach((control) => control.addEventListener('click', copyPrompt));
+    if (!motionReduced && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); } }), { threshold: .14 });
+      document.querySelectorAll('.reveal').forEach((item) => observer.observe(item));
+    } else document.querySelectorAll('.reveal').forEach((item) => item.classList.add('is-visible'));
+  </script>
+</body>
+</html>

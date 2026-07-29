@@ -1,0 +1,5 @@
+interface:
+  display_name: "美股长期价值批量初筛"
+  short_description: "本地证据校验结合 LoomLoom 云端并行审查"
+  default_prompt: "使用 $loomloom-019fad3b-8831-7986-bdd0-db4620e261b8 分析我提供的美股代码，先准备和校验数据，报价后等我确认，再生成可审计的初筛报告。"
+
